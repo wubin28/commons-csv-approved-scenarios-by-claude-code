@@ -261,6 +261,8 @@ public final class CSVFormat implements Serializable {
 
         private String recordSeparator;
 
+        private String[] requiredHeaders = Constants.EMPTY_STRING_ARRAY;
+
         private boolean skipHeaderRecord;
 
         private boolean lenientEof;
@@ -297,6 +299,7 @@ public final class CSVFormat implements Serializable {
             this.quoteMode = csvFormat.quoteMode;
             this.quotedNullString = csvFormat.quotedNullString;
             this.recordSeparator = csvFormat.recordSeparator;
+            this.requiredHeaders = csvFormat.requiredHeaders;
             this.skipHeaderRecord = csvFormat.skipHeaderRecord;
             this.trailingData = csvFormat.trailingData;
             this.trailingDelimiter = csvFormat.trailingDelimiter;
@@ -764,6 +767,21 @@ public final class CSVFormat implements Serializable {
          */
         public Builder setMaxRows(final long maxRows) {
             this.maxRows = maxRows;
+            return this;
+        }
+
+        /**
+         * Sets the header names that must be present when parsing; {@code null} or empty disables the check.
+         * <p>
+         * This method keeps a copy of the input array.
+         * </p>
+         *
+         * @param requiredHeaders the header names that must be present.
+         * @return This instance.
+         * @since 1.15.0
+         */
+        public Builder setRequiredHeaders(final String... requiredHeaders) {
+            this.requiredHeaders = requiredHeaders == null ? Constants.EMPTY_STRING_ARRAY : requiredHeaders.clone();
             return this;
         }
 
@@ -1595,6 +1613,9 @@ public final class CSVFormat implements Serializable {
     /** For output. */
     private final String recordSeparator;
 
+    /** Header names that must be present when parsing; empty if not checked. */
+    private final String[] requiredHeaders;
+
     /** Whether to skip the header record. */
     private final boolean skipHeaderRecord;
 
@@ -1632,6 +1653,7 @@ public final class CSVFormat implements Serializable {
         this.quoteMode = builder.quoteMode;
         this.quotedNullString = builder.quotedNullString;
         this.recordSeparator = builder.recordSeparator;
+        this.requiredHeaders = builder.requiredHeaders;
         this.skipHeaderRecord = builder.skipHeaderRecord;
         this.trailingData = builder.trailingData;
         this.trailingDelimiter = builder.trailingDelimiter;
@@ -1983,6 +2005,16 @@ public final class CSVFormat implements Serializable {
      */
     public String getRecordSeparator() {
         return recordSeparator;
+    }
+
+    /**
+     * Gets a copy of the header names that must be present when parsing.
+     *
+     * @return a copy of the required header names, empty if not checked.
+     * @since 1.15.0
+     */
+    public String[] getRequiredHeaders() {
+        return requiredHeaders.clone();
     }
 
     /**
