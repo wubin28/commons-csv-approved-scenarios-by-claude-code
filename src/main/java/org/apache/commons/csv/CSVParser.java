@@ -562,7 +562,7 @@ public final class CSVParser implements Iterable<CSVRecord>, Closeable {
         this.lexer = new Lexer(format, new ExtendedBufferedReader(reader, charset, trackBytes));
         this.csvRecordIterator = new CSVRecordIterator();
         this.headers = createHeaders();
-        // checkRequiredHeaders(); // FAULT INJECTION (wide)
+        checkRequiredHeaders();
         this.characterOffset = characterOffset;
         this.recordNumber = recordNumber - 1;
     }
