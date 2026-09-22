@@ -562,6 +562,7 @@ public final class CSVParser implements Iterable<CSVRecord>, Closeable {
         this.lexer = new Lexer(format, new ExtendedBufferedReader(reader, charset, trackBytes));
         this.csvRecordIterator = new CSVRecordIterator();
         this.headers = createHeaders();
+        checkRequiredHeaders();
         this.characterOffset = characterOffset;
         this.recordNumber = recordNumber - 1;
     }
@@ -572,6 +573,28 @@ public final class CSVParser implements Iterable<CSVRecord>, Closeable {
             return;
         }
         recordList.add(handleNull(input));
+    }
+
+    /**
+     * Checks that every required header is present in the header map, honoring {@link CSVFormat#getIgnoreHeaderCase()}.
+     *
+     * @throws IllegalArgumentException listing all missing headers in declaration order.
+     */
+    private void checkRequiredHeaders() {
+        final String[] requiredHeaders = format.getRequiredHeaders();
+        if (requiredHeaders.length == 0) {
+            return;
+        }
+        final Map<String, Integer> headerMap = headers.headerMap;
+        final List<String> missing = new ArrayList<>();
+        for (final String required : requiredHeaders) {
+            if (headerMap == null || !headerMap.containsKey(required)) {
+                missing.add(required);
+            }
+        }
+        if (!missing.isEmpty()) {
+            throw new IllegalArgumentException(String.format("Missing required headers %s; actual header: %s", missing, headers.headerNames));
+        }
     }
 
     /**

@@ -1715,7 +1715,8 @@ public final class CSVFormat implements Serializable {
                 ignoreSurroundingSpaces == other.ignoreSurroundingSpaces && lenientEof == other.lenientEof &&
                 Objects.equals(nullString, other.nullString) && Objects.equals(quoteCharacter, other.quoteCharacter) &&
                 quoteMode == other.quoteMode && Objects.equals(quotedNullString, other.quotedNullString) &&
-                Objects.equals(recordSeparator, other.recordSeparator) && skipHeaderRecord == other.skipHeaderRecord &&
+                Objects.equals(recordSeparator, other.recordSeparator) && Arrays.equals(requiredHeaders, other.requiredHeaders) &&
+                skipHeaderRecord == other.skipHeaderRecord &&
                 trailingData == other.trailingData && trailingDelimiter == other.trailingDelimiter && trim == other.trim;
     }
 
@@ -2061,6 +2062,7 @@ public final class CSVFormat implements Serializable {
         int result = 1;
         result = prime * result + Arrays.hashCode(headerComments);
         result = prime * result + Arrays.hashCode(headers);
+        result = prime * result + Arrays.hashCode(requiredHeaders);
         return prime * result + Objects.hash(allowMissingColumnNames, autoFlush, commentMarker, delimiter, duplicateHeaderMode, escapeCharacter,
                 ignoreEmptyLines, ignoreHeaderCase, ignoreSurroundingSpaces, lenientEof, nullString, quoteCharacter, quoteMode, quotedNullString,
                 recordSeparator, skipHeaderRecord, trailingData, trailingDelimiter, trim);
@@ -2611,6 +2613,10 @@ public final class CSVFormat implements Serializable {
             sb.append(Constants.SP);
             sb.append("Header:").append(Arrays.toString(headers));
         }
+        if (requiredHeaders.length > 0) {
+            sb.append(Constants.SP);
+            sb.append("RequiredHeaders:").append(Arrays.toString(requiredHeaders));
+        }
         return sb.toString();
     }
 
@@ -2666,6 +2672,23 @@ public final class CSVFormat implements Serializable {
                     throw new IllegalArgumentException(String.format(
                             "The header contains a duplicate name: \"%s\" in %s. If this is valid then use CSVFormat.Builder.setDuplicateHeaderMode().", header,
                             Arrays.toString(headers)));
+                }
+            }
+        }
+        // Validate required headers
+        if (requiredHeaders.length > 0) {
+            if (headers == null) {
+                throw new IllegalArgumentException(String.format("Required headers %s need a header: call setHeader() to read or define one.",
+                        Arrays.toString(requiredHeaders)));
+            }
+            final Set<String> seen = new HashSet<>(requiredHeaders.length);
+            for (final String required : requiredHeaders) {
+                if (isBlank(required)) {
+                    throw new IllegalArgumentException("Required headers contain a null or blank name: " + Arrays.toString(requiredHeaders));
+                }
+                if (!seen.add(required)) {
+                    throw new IllegalArgumentException(
+                            String.format("Required headers contain a duplicate name: \"%s\" in %s", required, Arrays.toString(requiredHeaders)));
                 }
             }
         }
