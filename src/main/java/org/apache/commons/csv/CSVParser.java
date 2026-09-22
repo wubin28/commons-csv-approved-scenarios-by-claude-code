@@ -588,7 +588,7 @@ public final class CSVParser implements Iterable<CSVRecord>, Closeable {
         final Map<String, Integer> headerMap = headers.headerMap;
         final List<String> missing = new ArrayList<>();
         for (final String required : requiredHeaders) {
-            if (headerMap == null || !headerMap.containsKey(required)) {
+            if (headerMap == null || headers.headerNames.stream().noneMatch(required::equalsIgnoreCase)) { // FAULT INJECTION (narrow)
                 missing.add(required);
             }
         }
